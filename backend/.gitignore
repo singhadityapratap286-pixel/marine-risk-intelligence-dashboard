@@ -1,0 +1,12 @@
+# Secrets and Environments
+.env
+
+# Virtual Environments / Dependencies
+venv/
+node_modules/
+__pycache__/
+*.pyc
+
+# Local Uploads/Logs
+uploads/
+*.log

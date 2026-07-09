@@ -1,0 +1,284 @@
+openapi: 3.0.3
+info:
+  title: Marine Risk Intelligence Platform API
+  description: |
+    Geospatial marine intelligence API that fuses satellite sea-surface temperature data,
+    community-reported coastal incidents, and simulation tools to identify at-risk marine zones.
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+    description: Local development server
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns health status of backend server and database/Redis connections.
+      responses:
+        '200':
+          description: Server and dependencies are healthy.
+        '503':
+          description: Server is unhealthy or database is offline.
+
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - fullName
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                fullName:
+                  type: string
+                role:
+                  type: string
+                  enum: [reporter, admin]
+                  default: reporter
+      responses:
+        '201':
+          description: Registration successful.
+        '409':
+          description: Email already in use.
+
+  /api/auth/login:
+    post:
+      summary: Login user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful.
+
+  /api/auth/profile:
+    get:
+      summary: Get user profile
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current user profile fetched.
+
+  /api/sst/datasets:
+    get:
+      summary: List all SST datasets
+      tags:
+        - Sea Surface Temperature
+      responses:
+        '200':
+          description: Array of datasets.
+
+  /api/sst/readings:
+    get:
+      summary: Get filtered raw SST readings
+      tags:
+        - Sea Surface Temperature
+      parameters:
+        - name: bbox
+          in: query
+          description: Bounding box coordinates "minLon,minLat,maxLon,maxLat"
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: onlyAnomalies
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: SST readings array.
+
+  /api/sst/anomalies:
+    get:
+      summary: Get computed anomaly zones as GeoJSON
+      tags:
+        - Sea Surface Temperature
+      parameters:
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high, critical]
+      responses:
+        '200':
+          description: GeoJSON FeatureCollection of anomaly zones.
+
+  /api/sst/heatmap:
+    get:
+      summary: Get aggregated heatmap grid data
+      tags:
+        - Sea Surface Temperature
+      responses:
+        '200':
+          description: Grid cell array with average temperatures.
+
+  /api/gis/risk-zones:
+    get:
+      summary: Get dynamic coastal risk zones
+      description: Combines satellite SST anomalies and community reporting densities into a single map overlay.
+      tags:
+        - GIS Map Layers
+      responses:
+        '200':
+          description: GeoJSON FeatureCollection of risk zones.
+
+  /api/simulation:
+    post:
+      summary: Trigger a thermal plume or heatwave simulation
+      tags:
+        - Simulation Models
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - modelType
+                - inputParams
+              properties:
+                name:
+                  type: string
+                modelType:
+                  type: string
+                  enum: [thermal_plume, heatwave_spread]
+                inputParams:
+                  type: object
+                  required:
+                    - epicenterLon
+                    - epicenterLat
+                    - epicenterTemp
+                  properties:
+                    epicenterLon:
+                      type: number
+                    epicenterLat:
+                      type: number
+                    epicenterTemp:
+                      type: number
+                    maxRadiusKm:
+                      type: number
+                      default: 200
+                    windDirectionDeg:
+                      type: number
+                    windSpeedFactor:
+                      type: number
+      responses:
+        '200':
+          description: Simulation initiated successfully.
+
+  /api/simulation/{id}/result:
+    get:
+      summary: Fetch simulation results as GeoJSON
+      tags:
+        - Simulation Models
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Completed simulation GeoJSON.
+
+  /api/reports:
+    post:
+      summary: Submit a community incident report (pollution, coral bleaching)
+      tags:
+        - Community Reports
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - latitude
+                - longitude
+                - incidentType
+                - title
+                - description
+              properties:
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+                incidentType:
+                  type: string
+                  enum: [pollution, coral_bleaching, algal_bloom, marine_mortality, other]
+                title:
+                  type: string
+                description:
+                  type: string
+                severity:
+                  type: string
+                  enum: [low, medium, high, critical]
+      responses:
+        '201':
+          description: Report submitted successfully.
+
+    get:
+      summary: Fetch approved community reports
+      tags:
+        - Community Reports
+      responses:
+        '200':
+          description: GeoJSON FeatureCollection of approved reports.
+
+  /api/alerts:
+    get:
+      summary: Fetch current active warnings/alerts
+      tags:
+        - Environmental Alerts
+      responses:
+        '200':
+          description: Alerts list.
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
