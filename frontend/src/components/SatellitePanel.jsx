@@ -64,8 +64,8 @@ function SatellitePanel() {
             const style = styleFor(r.Heatwave_Risk);
             return (
               <CircleMarker
-                key={`hw-${r.Latitude}-${r.Corrected_Lon}-${idx}`}
-                center={[r.Latitude, r.Corrected_Lon]}
+                key={`hw-${r.lat}-${r.Corrected_Lon}-${idx}`}
+                center={[r.lat, r.Corrected_Lon]}
                 radius={style.radius}
                 pathOptions={{ color: style.stroke, fillColor: style.fill, fillOpacity: 0.9, weight: 1.5 }}
               >

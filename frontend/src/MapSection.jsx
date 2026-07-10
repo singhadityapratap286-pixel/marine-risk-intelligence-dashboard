@@ -33,7 +33,7 @@ function MapSection() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    Papa.parse("/data/atlantic_heatwaves.csv", {
+    Papa.parse("/atlantic_heatwaves.csv", {
       download: true,
       header: true,
       dynamicTyping: true,
@@ -42,7 +42,7 @@ function MapSection() {
         const clean = (results.data || []).filter(
           (r) =>
             r.Date &&
-            typeof r.Latitude === "number" &&
+            typeof r.lat === "number" &&
             typeof r.Corrected_Lon === "number"
         );
         if (!clean.length) {
@@ -184,8 +184,8 @@ function MapSection() {
           const style = styleFor(r.Heatwave_Risk);
           return (
             <CircleMarker
-              key={`${r.Latitude}-${r.Corrected_Lon}-${idx}`}
-              center={[r.Latitude, r.Corrected_Lon]}
+              key={`${r.lat}-${r.Corrected_Lon}-${idx}`}
+              center={[r.lat, r.Corrected_Lon]}
               radius={style.radius}
               pathOptions={{
                 color: style.stroke,
@@ -199,7 +199,7 @@ function MapSection() {
                   <p className="font-bold mb-1">
                     {r.Heatwave_Risk === "Warning" ? "🔴 Heatwave Warning" : "⚪ Heatwave Watch"}
                   </p>
-                  <p>Lat: {r.Latitude.toFixed(2)}, Lon: {r.Corrected_Lon.toFixed(2)}</p>
+                  <p>Lat: {r.lat.toFixed(2)}, Lon: {r.Corrected_Lon.toFixed(2)}</p>
                   <p>Date: {r.Date}</p>
                   <p>SST: {Number(r.Sea_Surface_Temperature).toFixed(2)}°C</p>
                   <p>30-day Avg SST: {Number(r.Average_SST).toFixed(2)}°C</p>

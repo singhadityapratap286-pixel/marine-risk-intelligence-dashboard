@@ -19,7 +19,7 @@ export default function ChartPanel() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Papa.parse("/data/atlantic_heatwaves.csv", {
+    Papa.parse("/atlantic_heatwaves.csv", {
       download: true,
       header: true,
       dynamicTyping: true,

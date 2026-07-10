@@ -9,7 +9,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import heroImg from "../assets/hero.png";
-import StatCounter from "../components/StatCounter";
+import MetricCard from "../components/MetricCard";
 import { useLanguage } from "../context/LanguageContext";
 
 const stats = [
@@ -85,7 +85,7 @@ function HomePage() {
           {stats.map((s) => (
             <div key={s.label} className="text-center md:text-left">
               <div className="font-display text-3xl font-bold text-[#c9a962]">
-                <StatCounter value={s.value} suffix={s.suffix} decimals={s.decimals || 0} />
+                <MetricCard value={s.value} suffix={s.suffix} decimals={s.decimals || 0} />
               </div>
               <div className="mt-1 text-sm text-slate-400">{s.label}</div>
             </div>

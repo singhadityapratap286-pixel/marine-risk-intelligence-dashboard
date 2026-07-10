@@ -12,7 +12,7 @@ export function useAtlanticStations() {
 
   useEffect(() => {
     let cancelled = false;
-    Papa.parse("/data/atlantic_heatwaves.csv", {
+    Papa.parse("/atlantic_heatwaves.csv", {
       download: true,
       header: true,
       dynamicTyping: true,
@@ -21,7 +21,7 @@ export function useAtlanticStations() {
         if (cancelled) return;
         setRows(
           (results.data || []).filter(
-            (r) => r.Date && typeof r.Latitude === "number" && typeof r.Corrected_Lon === "number"
+            (r) => r.Date && typeof r.lat === "number" && typeof r.Corrected_Lon === "number"
           )
         );
         setLoading(false);
@@ -36,7 +36,7 @@ export function useAtlanticStations() {
   const latestStations = useMemo(() => {
     if (!rows.length) return [];
     const latestDate = rows.reduce((max, r) => (r.Date > max ? r.Date : max), rows[0].Date);
-    return rows.filter((r) => r.Date === latestDate).map((r) => ({ ...r, lat: r.Latitude, lon: r.Corrected_Lon }));
+    return rows.filter((r) => r.Date === latestDate).map((r) => ({ ...r, lat: r.lat, lon: r.Corrected_Lon }));
   }, [rows]);
 
   const latestDate = latestStations[0]?.Date || null;
